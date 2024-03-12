@@ -1,10 +1,11 @@
 import pandas as pd
 import re
-import pickle
+#import pickle
+import xgboost as xgb
 
 
 class SKPredModel:
-    def __init__(self, pickle_dump_path: str):
+    def __init__(self, model_path: str):
         """
         Here you initialize your model
         """
@@ -13,7 +14,25 @@ class SKPredModel:
             r'(?P<hours>.+?(?=:)):(?P<minutes>.+?(?=:)):(?P<seconds>\d+)'
         ]
 
-        self.regressor = pickle.load(open(pickle_dump_path, 'rb'))
+        #self.regressor = pickle.load(open(pickle_dump_path, 'rb'))
+
+        self.SEED = 314159265
+
+        self.regressor = xgb.XGBRegressor(booster = 'gbtree',
+                           colsample_bytree = 1.0,
+                           learning_rate = 0.025,
+                           gamma = 1.0,
+                           max_depth = 13,
+                           min_child_weight = 3,
+                           n_estimators = 263,
+                           n_jobs = 16,
+                           objective = 'reg:squarederror',
+                           random_state = self.SEED,
+                           subsample = 0.7,
+                           tree_method = 'exact'
+                        )
+        self.regressor.load_model(model_path)
+
         self.compiled_regexps = [re.compile(regexp) for regexp in regexp_time_list]
 
     def convert_time_to_seconds(self, element):
@@ -87,6 +106,7 @@ class SKPredModel:
         tasks.fillna({'succeded_task_count': 0, 'failed_task_count': 0, 'timeout_task_count': 0}, inplace=True)
         tasks['succeded_task_proportion'] = tasks['succeded_task_count'] / (tasks['succeded_task_count'] + tasks['failed_task_count'] + tasks['timeout_task_count'])
         test_df = test_df.merge(tasks, on='UID', how='left')
+        test_df.drop(columns=['Elapsed'], inplace=True)
 
         return test_df
 
