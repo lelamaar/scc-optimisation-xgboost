@@ -51,7 +51,7 @@ class SKPredModel:
         :param test_df:
         :return: test_df extended with generated features
         """
-        test_df.dropna(inplace=True)
+        test_df.fillna(0, inplace=True)
         test_df.drop(columns=['Start', 'JobName'], inplace=True)
         test_df['Timelimit'] = test_df['Timelimit'].apply(self.convert_time_to_seconds)
         test_df['Elapsed'] = test_df['Elapsed'].apply(self.convert_time_to_seconds)
@@ -106,7 +106,6 @@ class SKPredModel:
         tasks.fillna({'succeded_task_count': 0, 'failed_task_count': 0, 'timeout_task_count': 0}, inplace=True)
         tasks['succeded_task_proportion'] = tasks['succeded_task_count'] / (tasks['succeded_task_count'] + tasks['failed_task_count'] + tasks['timeout_task_count'])
         test_df = test_df.merge(tasks, on='UID', how='left')
-        test_df.drop(columns=['Elapsed'], inplace=True)
 
         return test_df
 
@@ -120,3 +119,21 @@ class SKPredModel:
         predictions = self.regressor.predict(test_df)
         
         return predictions
+
+
+# Usage example
+'''
+test_df = pd.read_csv('data/train_w_areas_st_till_june.csv',index_col=0)
+
+model = SKPredModel('SKPred_xgboost_saved_model.json')
+prepared = model.prepare_df(test_df.copy())
+
+y_test = prepared['Elapsed']
+prepared.drop(columns=['Elapsed'], inplace=True)
+
+predictions = model.predict(prepared)
+
+from sklearn.metrics import r2_score
+r2 = r2_score(y_test, predictions)
+print(f'R2 Score: {r2}')
+'''
