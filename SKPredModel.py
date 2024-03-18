@@ -92,6 +92,8 @@ class SKPredModel:
         test_df.drop(columns=['State'], inplace=True)
         test_df.drop(columns=['ExitCode'], inplace=True)
 
+        test_df.drop(columns=['Elapsed'], inplace=True)
+
         test_df.reset_index(inplace=True, drop=True)
 
         # mean_elapsed = pd.DataFrame(test_df[test_df['State'] == 0].groupby('UID').mean()['Elapsed'])
@@ -136,13 +138,5 @@ test_df = pd.read_csv('data/train_w_areas_st_till_june.csv',index_col=0)
 
 model = SKPredModel('SKPred_xgboost_saved_model.json')
 prepared = model.prepare_df(test_df.copy())
-
-y_test = prepared['Elapsed']
-prepared.drop(columns=['Elapsed'], inplace=True)
-
 predictions = model.predict(prepared)
-
-from sklearn.metrics import r2_score
-r2 = r2_score(y_test, predictions)
-print(f'R2 Score: {r2}')
 '''
