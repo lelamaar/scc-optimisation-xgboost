@@ -116,6 +116,10 @@ class SKPredModel:
         # test_df = test_df.merge(tasks, on='UID', how='left')
 
         return test_df
+    
+    @property
+    def model_keys(self) -> list[str]:
+        return self.regressor.get_booster().feature_names
 
     def predict(self, test_df: pd.DataFrame) -> pd.Series:
         """
