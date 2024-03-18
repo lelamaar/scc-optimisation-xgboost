@@ -2,6 +2,7 @@ import pandas as pd
 import re
 #import pickle
 import xgboost as xgb
+from typing import List
 
 
 class SKPredModel:
@@ -118,7 +119,7 @@ class SKPredModel:
         return test_df
     
     @property
-    def model_keys(self) -> list[str]:
+    def model_keys(self) -> List[str]:
         return self.regressor.get_booster().feature_names
 
     def predict(self, test_df: pd.DataFrame) -> pd.Series:
